@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Percurso fictício", "stroke": "#2563eb", "stroke-width": 4 },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-25.000, 1.000],
+          [-24.996, 1.000],
+          [-24.996, 1.003],
+          [-24.992, 1.003],
+          [-24.992, 1.007]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Início", "marker-color": "#15803d" },
+      "geometry": { "type": "Point", "coordinates": [-25.000, 1.000] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Checkpoint fictício", "marker-color": "#2563eb" },
+      "geometry": { "type": "Point", "coordinates": [-24.996, 1.003] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Fim", "marker-color": "#b91c1c" },
+      "geometry": { "type": "Point", "coordinates": [-24.992, 1.007] }
+    }
+  ]
+}
