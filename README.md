@@ -8,7 +8,7 @@ Sou Lucas Salgado, desenvolvedor back-end na Nexus Tech. Trabalho com APIs, banc
 
 ### Nexus Ponto
 
-Desenvolvo o back-end de um sistema de registro eletrônico de ponto no modelo REP-P. O aplicativo coleta marcações mesmo sem internet e, ao reconectar, sincroniza os registros com proteção contra duplicidade. O RH consulta o histórico de marcações e ajustes. O software tem registro no INPI.
+Desenvolvo o back-end de um sistema de registro eletrônico de ponto no modelo REP-P. O aplicativo coleta marcações mesmo sem internet e, ao reconectar, sincroniza os registros com proteção contra duplicidade. O RH consulta o histórico de marcações e ajustes. O software tem registro no INPI sob o número BR512026010193-0.
 
 ### Nexus Patrol
 
