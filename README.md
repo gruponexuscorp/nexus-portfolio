@@ -24,5 +24,7 @@ Integro o aplicativo de retirada e devolução ao painel da equipe administrativ
 
 ## Demonstrações
 
-- [Sincronização de ponto em JavaScript](sincronizacao-de-ponto.mjs). Exemplo em memória que reaproveita o mesmo identificador quando um envio precisa ser repetido. Executando `node sincronizacao-de-ponto.mjs` na raiz do projeto, é possível conferir um registro novo, uma repetição e um conflito de dados.
-- [Mapa de uma rota fictícia](rota-ficticia.geojson). Um percurso em GeoJSON com início, checkpoint e fim. Todos os pontos são de demonstração.
+- [Testar Nexus Ponto](https://gruponexuscorp.github.io/nexus-portfolio/#ponto). Registre uma entrada sem conexão, reconecte e veja como o reenvio é tratado.
+- [Explorar Nexus Patrol](https://gruponexuscorp.github.io/nexus-portfolio/#patrol). Reproduza uma ronda no mapa e consulte os registros dos checkpoints.
+
+As duas demonstrações usam dados fictícios.
