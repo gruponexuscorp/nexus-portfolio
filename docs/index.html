@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Demonstrações interativas do Nexus Ponto e do Nexus Patrol.">
+  <title>Demonstrações · Nexus Tech</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bg: #0a101b;
+      --panel: #121e2e;
+      --panel-raised: #172639;
+      --border: #293a50;
+      --text: #eef4fb;
+      --muted: #aebed0;
+      --accent: #62d9ee;
+      --ink: #102130;
+      --warning: #f5c878;
+      --success: #8ce5b7;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background: radial-gradient(ellipse at 72% 0, #152b42 0, transparent 48%), var(--bg);
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: clamp(2.15rem, 5vw, 3.65rem); letter-spacing: -.055em; line-height: 1.03; }
+    h2 { font-size: 1.12rem; letter-spacing: -.018em; line-height: 1.25; }
+    .shell { width: min(1120px, calc(100% - 48px)); margin-inline: auto; }
+    .site-header { border-bottom: 1px solid var(--border); background: #0b1421b8; }
+    .site-bar { min-height: 65px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 750; }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border: 1px solid #326679;
+      border-radius: 8px;
+      background: #162e42;
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+      font-size: .82rem;
+      line-height: 1;
+    }
+    .repo-link { color: var(--muted); font-size: .86rem; text-decoration: none; }
+    .repo-link:hover { color: var(--text); text-decoration: underline; }
+    main { padding: 26px 0 44px; }
+    .demo-nav {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      background: #0b1422;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 24px;
+    }
+    .demo-nav a {
+      display: flex;
+      align-items: center;
+      padding: 9px 14px;
+      min-height: 40px;
+      border-radius: 6px;
+      font-size: .91rem;
+      font-weight: 650;
+      text-decoration: none;
+      color: var(--muted);
+    }
+    .demo-nav a[aria-current="page"] { color: var(--text); background: #263b52; }
+    .demo-nav a:hover { color: var(--text); }
+    .demo-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .demo-heading p { color: var(--muted); max-width: 64ch; margin-top: 9px; line-height: 1.5; }
+    .sample-label {
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 11px;
+      color: #d2e2f1;
+      font-size: .74rem;
+      line-height: 1.25;
+    }
+    .demo-grid { display: grid; gap: 16px; align-items: start; }
+    .point-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .patrol-grid { grid-template-columns: minmax(0, 2.05fr) minmax(250px, 1fr); }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      box-shadow: 0 12px 30px #0002;
+    }
+    .point-card, .history-card, .checkpoints-card { padding: 20px; }
+    .panel-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .status {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+    .status::before { content: ""; width: 6px; height: 6px; border-radius: 100%; background: currentColor; }
+    .status[data-state="offline"], .status[data-state="pending"] { color: var(--warning); background: #352d20; border-color: #5a4832; }
+    .status[data-state="online"], .status[data-state="synced"] { color: var(--success); background: #143328; border-color: #285345; }
+    .clock-card {
+      display: grid;
+      justify-items: start;
+      gap: 7px;
+      margin: 16px 0 14px;
+      padding: 16px;
+      border: 1px solid #2a4057;
+      border-radius: 10px;
+      background: linear-gradient(130deg, #20364e, #132234);
+    }
+    .caption { color: var(--muted); font-size: .82rem; }
+    .clock {
+      font-size: clamp(2.75rem, 6vw, 4.15rem);
+      letter-spacing: -.06em;
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.02;
+    }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 42px;
+      padding: 8px 12px;
+      background: var(--panel-raised);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: .86rem;
+      font-weight: 650;
+      line-height: 1.25;
+    }
+    .button:hover:not(:disabled) { background: #243951; }
+    .button.primary { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+    .button.primary:hover:not(:disabled) { background: #a1edfa; }
+    .button:disabled { cursor: default; opacity: .65; }
+    .button.primary:disabled { background: #274255; color: #c5d6e4; border-color: #355367; }
+    .button.quiet { background: transparent; color: var(--muted); }
+    .hint { margin-top: 13px; color: var(--muted); font-size: .88rem; line-height: 1.45; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 16px 0; }
+    .stats > div { border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; background: #0f1a28; }
+    .stats strong { display: block; margin-bottom: 3px; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+    .event-list { list-style: none; padding: 0; margin: 0; }
+    .event-list li { padding: 10px 0; border-top: 1px solid var(--border); }
+    .event-list strong { font-weight: 650; font-size: .9rem; }
+    .event-list p { margin-top: 3px; font-size: .82rem; line-height: 1.35; color: var(--muted); }
+    .event-list .empty { color: var(--muted); font-size: .88rem; line-height: 1.45; }
+    .map-card { overflow: hidden; }
+    .map-head, .map-controls { padding: 13px 16px; }
+    .map-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px 14px; }
+    .map-head .caption { font-variant-numeric: tabular-nums; }
+    canvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 900 / 510;
+      background: #182731;
+      border-block: 1px solid var(--border);
+    }
+    .map-actions { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; }
+    .map-time {
+      border-left: 1px solid var(--border);
+      padding-left: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .slider { display: block; width: 100%; height: 28px; margin: 4px 0; accent-color: var(--accent); }
+    .map-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .map-legend { display: inline-flex; align-items: center; gap: 7px; }
+    .legend-line { width: 13px; border-top: 3px solid var(--accent); border-radius: 2px; }
+    .checkpoints { list-style: none; padding: 0; margin: 13px 0 0; display: grid; gap: 7px; }
+    .checkpoint {
+      display: grid;
+      grid-template-columns: 27px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      min-height: 48px;
+      padding: 7px 8px;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #142235;
+      text-align: left;
+    }
+    .checkpoint:hover { background: #223750; }
+    .checkpoint[aria-current="step"] { border-color: #4a9dad; background: #183747; }
+    .checkpoint-symbol {
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 100%;
+      background: #2c4459;
+      color: var(--text);
+      font-weight: 700;
+      font-size: .75rem;
+    }
+    .checkpoint[aria-current="step"] .checkpoint-symbol { background: var(--accent); color: var(--ink); }
+    .checkpoint-label { display: block; font-weight: 650; font-size: .87rem; line-height: 1.2; }
+    .checkpoint-category { display: block; margin-top: 2px; color: var(--muted); font-size: .74rem; }
+    .checkpoint-time { color: var(--muted); font-size: .77rem; font-variant-numeric: tabular-nums; }
+    .checkpoint-description {
+      color: var(--muted);
+      margin-top: 14px;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      font-size: .87rem;
+      line-height: 1.5;
+      min-height: 78px;
+    }
+
+    @media (max-width: 780px) {
+      .patrol-grid { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 590px) {
+      .shell { width: calc(100% - 28px); }
+      .point-grid { grid-template-columns: minmax(0, 1fr); }
+      .site-bar { min-height: 56px; }
+      main { padding-top: 16px; }
+      .demo-nav { margin-bottom: 18px; }
+      .demo-heading { display: block; margin-bottom: 16px; }
+      .sample-label { display: inline-block; margin-top: 9px; }
+      .point-card, .history-card, .checkpoints-card { padding: 15px; }
+      .map-head, .map-controls { padding-inline: 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-bar shell">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">N</span> Nexus Tech</div>
+      <a class="repo-link" href="https://github.com/gruponexuscorp/nexus-portfolio">Portfólio no GitHub</a>
+    </div>
+  </header>
+  <main class="shell">
+    <nav class="demo-nav" aria-label="Demonstrações">
+      <a id="link-ponto" href="#ponto" aria-current="page">Nexus Ponto</a>
+      <a id="link-patrol" href="#patrol">Nexus Patrol</a>
+    </nav>
+
+    <section id="ponto" aria-labelledby="title-ponto">
+      <header class="demo-heading">
+        <div>
+          <h1 id="title-ponto">Nexus Ponto</h1>
+          <p>Registre uma entrada sem conexão e acompanhe a sincronização quando ela voltar.</p>
+        </div>
+        <span class="sample-label">Dados fictícios</span>
+      </header>
+
+      <div class="demo-grid point-grid">
+        <section class="panel point-card" aria-labelledby="marking-title">
+          <div class="panel-head">
+            <h2 id="marking-title">Marcação de entrada</h2>
+            <span class="status" id="connection-status" data-state="offline" aria-live="polite">Sem conexão</span>
+          </div>
+          <div class="clock-card">
+            <span class="caption">Horário simulado</span>
+            <time class="clock" datetime="08:00">08:00</time>
+            <span class="status" id="marking-status" aria-live="polite">Sem marcação</span>
+          </div>
+          <div class="actions">
+            <button class="button primary" id="register" type="button">Registrar entrada</button>
+            <button class="button" id="connection" type="button">Reconectar</button>
+            <button class="button" id="resend" type="button" disabled>Reenviar marcação</button>
+          </div>
+          <p class="hint" id="marking-hint">A conexão começa desligada para simular uma marcação offline.</p>
+        </section>
+
+        <section class="panel history-card" aria-labelledby="history-title">
+          <div class="panel-head">
+            <h2 id="history-title">Histórico da sincronização</h2>
+            <button class="button quiet" id="reset-ponto" type="button">Reiniciar</button>
+          </div>
+          <div class="stats">
+            <div><strong id="pending-count">0</strong><span class="caption">Na fila offline</span></div>
+            <div><strong id="server-count">0</strong><span class="caption">No servidor simulado</span></div>
+          </div>
+          <ul class="event-list" id="marking-events" aria-live="polite">
+            <li class="empty">Os eventos aparecem aqui ao registrar a entrada.</li>
+          </ul>
+        </section>
+      </div>
+    </section>
+
+    <section id="patrol" aria-labelledby="title-patrol" hidden>
+      <header class="demo-heading">
+        <div>
+          <h1 id="title-patrol">Nexus Patrol</h1>
+          <p>Reproduza o percurso de uma ronda e consulte o que foi registrado em cada checkpoint.</p>
+        </div>
+        <span class="sample-label">Dados fictícios</span>
+      </header>
+
+      <div class="demo-grid patrol-grid">
+        <section class="panel map-card" aria-labelledby="map-title">
+          <div class="map-head">
+            <h2 id="map-title">Ronda no Posto Alfa</h2>
+            <span class="caption">1,24 km · 27 min</span>
+          </div>
+          <canvas id="route-map" width="900" height="510" role="img" aria-label="Mapa fictício do percurso entre a base, a portaria, a área de carga e o pátio"></canvas>
+          <div class="map-controls">
+            <div class="map-actions">
+              <button class="button primary" id="play-route" type="button">Reproduzir jornada</button>
+              <time class="map-time" id="route-time" datetime="07:05">07:05</time>
+            </div>
+            <input class="slider" id="route-progress" type="range" min="0" max="1000" value="0" aria-label="Progresso da jornada">
+            <div class="map-footer">
+              <span class="caption">07:05 a 07:32</span>
+              <span class="caption map-legend"><span class="legend-line" aria-hidden="true"></span> Percurso reproduzido</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel checkpoints-card" aria-labelledby="checkpoint-title">
+          <h2 id="checkpoint-title">Registros da jornada</h2>
+          <ol class="checkpoints" id="checkpoints"></ol>
+          <p class="checkpoint-description" id="checkpoint-description">A jornada começou na base operacional.</p>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <noscript><p class="shell">Ative o JavaScript para interagir com as demonstrações.</p></noscript>
+  <script>
+    "use strict";
+
+    const byId = id => document.getElementById(id);
+
+    const clockRecord = Object.freeze({ id: "demo-entrada", time: "08:00" });
+    const received = new Map();
+    const pointDemo = { online: false, marked: false, events: [] };
+    const registerButton = byId("register");
+    const connectionButton = byId("connection");
+    const resendButton = byId("resend");
+
+    function addPointEvent(title, description) {
+      pointDemo.events.push({ title, description });
+      if (pointDemo.events.length > 4) pointDemo.events.shift();
+    }
+
+    function sendRecord(wasPending = false) {
+      if (received.has(clockRecord.id)) {
+        addPointEvent("Reenvio reconhecido", "O servidor encontrou a marcação original pelo identificador e manteve um único registro.");
+        return;
+      }
+
+      received.set(clockRecord.id, clockRecord);
+      const description = wasPending
+        ? "A entrada das 08:00 saiu da fila offline e chegou ao servidor simulado."
+        : "A entrada das 08:00 chegou ao servidor simulado.";
+      addPointEvent("Marcação sincronizada", description);
+    }
+
+    function renderPoint() {
+      const synced = received.has(clockRecord.id);
+      const pending = pointDemo.marked && !synced;
+      const connection = byId("connection-status");
+      const status = byId("marking-status");
+      connection.textContent = pointDemo.online ? "Conectado" : "Sem conexão";
+      connection.dataset.state = pointDemo.online ? "online" : "offline";
+      status.textContent = synced ? "Sincronizada" : pending ? "Pendente" : "Sem marcação";
+      status.dataset.state = synced ? "synced" : pending ? "pending" : "empty";
+      byId("pending-count").textContent = pending ? "1" : "0";
+      byId("server-count").textContent = String(received.size);
+      registerButton.disabled = pointDemo.marked;
+      resendButton.disabled = !pointDemo.online || !synced;
+      connectionButton.textContent = pointDemo.online ? "Simular queda de conexão" : "Reconectar";
+
+      let hint = "A conexão começa desligada para simular uma marcação offline.";
+      if (pending) hint = "A entrada está na fila. Reconecte para sincronizar a marcação.";
+      else if (synced && pointDemo.online) hint = "Reenvie a entrada para ver o servidor reconhecer a mesma marcação.";
+      else if (synced) hint = "Reconecte para testar o reenvio da marcação já sincronizada.";
+      else if (pointDemo.online) hint = "A próxima marcação será sincronizada assim que for registrada.";
+      byId("marking-hint").textContent = hint;
+
+      const events = byId("marking-events");
+      if (pointDemo.events.length === 0) {
+        const empty = document.createElement("li");
+        empty.className = "empty";
+        empty.textContent = "Os eventos aparecem aqui ao registrar a entrada.";
+        events.replaceChildren(empty);
+        return;
+      }
+
+      const latest = [...pointDemo.events].reverse();
+      events.replaceChildren(...latest.map(event => {
+        const item = document.createElement("li");
+        const title = document.createElement("strong");
+        const description = document.createElement("p");
+        title.textContent = event.title;
+        description.textContent = event.description;
+        item.append(title, description);
+        return item;
+      }));
+    }
+
+    registerButton.addEventListener("click", () => {
+      if (pointDemo.marked) return;
+      pointDemo.marked = true;
+      addPointEvent("Entrada registrada", pointDemo.online
+        ? "A entrada das 08:00 foi capturada no dispositivo."
+        : "A entrada das 08:00 foi salva no dispositivo e está pendente de sincronização.");
+      if (pointDemo.online) sendRecord();
+      renderPoint();
+    });
+
+    connectionButton.addEventListener("click", () => {
+      pointDemo.online = !pointDemo.online;
+      const pending = pointDemo.marked && !received.has(clockRecord.id);
+      if (pointDemo.online && pending) sendRecord(true);
+      renderPoint();
+    });
+
+    resendButton.addEventListener("click", () => {
+      if (!pointDemo.online || !received.has(clockRecord.id)) return;
+      sendRecord();
+      renderPoint();
+    });
+
+    byId("reset-ponto").addEventListener("click", () => {
+      pointDemo.online = false;
+      pointDemo.marked = false;
+      pointDemo.events.length = 0;
+      received.clear();
+      renderPoint();
+    });
+
+    // The coordinates describe a fictional map in canvas pixels.
+    const world = { width: 900, height: 510 };
+    const trip = { start: 7 * 60 + 5, minutes: 27, playbackTime: 24000 };
+    const route = [
+      [95, 430], [159, 430], [205, 430], [222, 428], [228, 420], [228, 374],
+      [228, 350], [238, 340], [298, 340], [368, 340], [378, 330], [378, 260],
+      [390, 248], [451, 248], [526, 248], [526, 208], [526, 172], [536, 162],
+      [606, 162], [664, 162], [674, 152], [674, 106], [674, 78], [741, 78], [819, 78],
+    ];
+    const distances = [0];
+    for (let index = 1; index < route.length; index += 1) {
+      const [x, y] = route[index];
+      const [previousX, previousY] = route[index - 1];
+      distances.push(distances[index - 1] + Math.hypot(x - previousX, y - previousY));
+    }
+    const total = distances.at(-1);
+    const checkpoints = [
+      { point: 0, symbol: "I", name: "Base operacional", type: "Início", detail: "A jornada começou na base operacional." },
+      { point: 9, symbol: "1", name: "Portaria", type: "Ronda registrada", detail: "A supervisão conferiu o acesso principal e registrou a visita à portaria." },
+      { point: 14, symbol: "2", name: "Área de carga", type: "Ocorrência", detail: "Iluminação intermitente registrada na área de carga. O registro e a evidência de campo ficam disponíveis para consulta no relatório." },
+      { point: 24, symbol: "F", name: "Pátio", type: "Encerramento", detail: "A ronda terminou no pátio. A supervisão pode rever o percurso e os registros da jornada." },
+    ].map(stop => ({ ...stop, progress: distances[stop.point] / total }));
+
+    const map = byId("route-map");
+    const mapContext = map.getContext("2d");
+    const background = document.createElement("canvas");
+    background.width = world.width;
+    background.height = world.height;
+    const backgroundContext = background.getContext("2d");
+
+    function drawNeighborhood() {
+      const ctx = backgroundContext;
+      const streetsX = [-45, 95, 228, 378, 526, 674, 819, 945];
+      const streetsY = [-35, 78, 162, 248, 340, 430, 550];
+      ctx.fillStyle = "#192b39";
+      ctx.fillRect(0, 0, world.width, world.height);
+
+      for (let row = 0; row < streetsY.length - 1; row += 1) {
+        for (let column = 0; column < streetsX.length - 1; column += 1) {
+          const x = streetsX[column] + 9;
+          const y = streetsY[row] + 9;
+          const width = streetsX[column + 1] - x - 9;
+          const height = streetsY[row + 1] - y - 9;
+          const park = (row === 2 && column === 5) || (row === 4 && column === 1);
+          ctx.fillStyle = park ? "#234739" : "#273b4a";
+          ctx.fillRect(x, y, width, height);
+          ctx.strokeStyle = park ? "#335849" : "#344958";
+          ctx.strokeRect(x + 1, y + 1, width - 2, height - 2);
+
+          if (park) {
+            ctx.fillStyle = "#35604b";
+            for (let tree = 0; tree < 7; tree += 1) {
+              const treeX = x + 13 + (tree % 4) * (width - 22) / 4;
+              const treeY = y + 12 + Math.floor(tree / 4) * (height - 19) / 2;
+              ctx.beginPath();
+              ctx.arc(treeX, treeY, 4 + tree % 3, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          } else {
+            for (let building = 0; building < 5; building += 1) {
+              const offset = (row * 11 + column * 7 + building * 3) % 13;
+              const slotX = x + 9 + building % 3 * (width - 14) / 3;
+              const slotY = y + 8 + Math.floor(building / 3) * (height - 12) / 2;
+              const size = Math.min(30 + offset, (width - 16) / 3 - 5);
+              ctx.fillStyle = building % 2 ? "#3b5060" : "#334957";
+              ctx.fillRect(slotX, slotY, size, Math.min(18 + offset % 7, height / 2 - 10));
+            }
+          }
+        }
+      }
+
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "#354a59";
+      ctx.setLineDash([5, 8]);
+      streetsX.slice(1, -1).forEach(x => {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, world.height);
+        ctx.stroke();
+      });
+      streetsY.slice(1, -1).forEach(y => {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(world.width, y);
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
+      ctx.font = "13px system-ui";
+      ctx.fillStyle = "#b1c4d3";
+      ctx.fillText("Av. Central", 405, 235);
+      ctx.fillText("R. da Portaria", 111, 418);
+      ctx.fillText("R. do Pátio", 705, 63);
+      ctx.fillStyle = "#a0c2ac";
+      ctx.fillText("Praça Alfa", 546, 226);
+    }
+
+    function drawPath(ctx, points, color, width) {
+      ctx.beginPath();
+      ctx.moveTo(...points[0]);
+      for (const point of points.slice(1)) ctx.lineTo(...point);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.stroke();
+    }
+
+    function positionAt(progress) {
+      const target = total * progress;
+      let end = distances.findIndex((distance, index) => index > 0 && distance >= target);
+      if (end === -1) end = route.length - 1;
+      const start = end - 1;
+      const ratio = (target - distances[start]) / (distances[end] - distances[start]);
+      const [x1, y1] = route[start];
+      const [x2, y2] = route[end];
+      return { end, point: [x1 + (x2 - x1) * ratio, y1 + (y2 - y1) * ratio] };
+    }
+
+    const patrolDemo = { progress: 0, active: -1, playing: false, frame: null };
+    const progressInput = byId("route-progress");
+    const playButton = byId("play-route");
+
+    function paintRoute() {
+      const ctx = mapContext;
+      ctx.setTransform(map.width / world.width, 0, 0, map.height / world.height, 0, 0);
+      ctx.drawImage(background, 0, 0);
+      drawPath(ctx, route, "#102838", 11);
+      drawPath(ctx, route, "#437689", 5);
+      const position = positionAt(patrolDemo.progress);
+      if (patrolDemo.progress > 0) {
+        drawPath(ctx, [...route.slice(0, position.end), position.point], "#62d9ee", 5);
+      }
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "700 13px system-ui";
+      checkpoints.forEach((stop, index) => {
+        const [x, y] = route[stop.point];
+        ctx.fillStyle = index === patrolDemo.active ? "#62d9ee" : "#243f52";
+        ctx.strokeStyle = "#c8edf7";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, y, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = index === patrolDemo.active ? "#102130" : "#eef4fb";
+        ctx.fillText(stop.symbol, x, y + 1);
+      });
+
+      if (patrolDemo.progress > 0 && patrolDemo.progress < 1) {
+        ctx.beginPath();
+        ctx.arc(...position.point, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff";
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#0c2631";
+        ctx.stroke();
+      }
+    }
+
+    function formatTime(progress) {
+      const minutes = trip.start + Math.round(progress * trip.minutes);
+      const pad = value => String(value).padStart(2, "0");
+      return pad(Math.floor(minutes / 60)) + ":" + pad(minutes % 60);
+    }
+
+    function setRouteProgress(progress) {
+      patrolDemo.progress = Math.max(0, Math.min(1, progress));
+      const time = formatTime(patrolDemo.progress);
+      progressInput.value = String(Math.round(patrolDemo.progress * 1000));
+      progressInput.setAttribute("aria-valuetext", time);
+      const clock = byId("route-time");
+      if (clock.textContent !== time) {
+        clock.textContent = time;
+        clock.dateTime = time;
+      }
+      const active = checkpoints.findLastIndex(stop => stop.progress <= patrolDemo.progress);
+      if (active !== patrolDemo.active) {
+        patrolDemo.active = active;
+        byId("checkpoint-description").textContent = checkpoints[active].detail;
+        byId("checkpoints").querySelectorAll("button").forEach((button, index) => {
+          if (index === active) button.setAttribute("aria-current", "step");
+          else button.removeAttribute("aria-current");
+        });
+      }
+      paintRoute();
+    }
+
+    function pauseRoute() {
+      patrolDemo.playing = false;
+      if (patrolDemo.frame !== null) cancelAnimationFrame(patrolDemo.frame);
+      patrolDemo.frame = null;
+      playButton.textContent = patrolDemo.progress === 1 ? "Reproduzir novamente" : "Reproduzir jornada";
+    }
+
+    playButton.addEventListener("click", () => {
+      if (patrolDemo.playing) {
+        pauseRoute();
+        return;
+      }
+
+      const start = performance.now() - (patrolDemo.progress < 1 ? patrolDemo.progress : 0) * trip.playbackTime;
+      patrolDemo.playing = true;
+      playButton.textContent = "Pausar";
+      function advance(now) {
+        setRouteProgress((now - start) / trip.playbackTime);
+        if (patrolDemo.progress < 1) patrolDemo.frame = requestAnimationFrame(advance);
+        else pauseRoute();
+      }
+      patrolDemo.frame = requestAnimationFrame(advance);
+    });
+
+    progressInput.addEventListener("input", () => {
+      const progress = Number(progressInput.value) / 1000;
+      setRouteProgress(progress);
+      pauseRoute();
+    });
+
+    for (const stop of checkpoints) {
+      const item = document.createElement("li");
+      const button = document.createElement("button");
+      button.className = "checkpoint";
+      button.type = "button";
+      const symbol = document.createElement("span");
+      symbol.className = "checkpoint-symbol";
+      symbol.setAttribute("aria-hidden", "true");
+      symbol.textContent = stop.symbol;
+      const label = document.createElement("span");
+      const name = document.createElement("span");
+      name.className = "checkpoint-label";
+      name.textContent = stop.name;
+      const category = document.createElement("span");
+      category.className = "checkpoint-category";
+      category.textContent = stop.type;
+      label.append(name, category);
+      const time = document.createElement("time");
+      time.className = "checkpoint-time";
+      time.dateTime = formatTime(stop.progress);
+      time.textContent = time.dateTime;
+      button.append(symbol, label, time);
+      button.addEventListener("click", () => {
+        setRouteProgress(stop.progress);
+        pauseRoute();
+      });
+      item.append(button);
+      byId("checkpoints").append(item);
+    }
+
+    drawNeighborhood();
+    setRouteProgress(0);
+
+    function routeByHash() {
+      const onPatrol = window.location.hash === "#patrol";
+      byId("ponto").hidden = onPatrol;
+      byId("patrol").hidden = !onPatrol;
+      if (onPatrol) {
+        byId("link-ponto").removeAttribute("aria-current");
+        byId("link-patrol").setAttribute("aria-current", "page");
+        paintRoute();
+      } else {
+        byId("link-patrol").removeAttribute("aria-current");
+        byId("link-ponto").setAttribute("aria-current", "page");
+        pauseRoute();
+      }
+      window.scrollTo(0, 0);
+    }
+    window.addEventListener("hashchange", routeByHash);
+    routeByHash();
+  </script>
+</body>
+</html>
